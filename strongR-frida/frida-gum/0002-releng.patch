@@ -1,10 +1,10 @@
- rename-release-assets.sh | 4 ++--
+ releng/rename-release-assets.sh | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/rename-release-assets.sh b/rename-release-assets.sh
+diff --git a/releng/rename-release-assets.sh b/releng/rename-release-assets.sh
 index 69181cd..d86f4fe 100755
---- a/rename-release-assets.sh
-+++ b/rename-release-assets.sh
+--- a/releng/rename-release-assets.sh
++++ b/releng/rename-release-assets.sh
 @@ -16,8 +16,8 @@ for name in *; do
      frida-*-devkit-*)
        new_name=$(echo $name | sed -e "s,devkit-,devkit-$FRIDA_VERSION-,")
@@ -16,4 +16,3 @@ index 69181cd..d86f4fe 100755
        ;;
      *)
        new_name=""
-
