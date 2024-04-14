@@ -1,10 +1,3 @@
- lib/base/rpc.vala              | 15 ++++++++++++---
- lib/gadget/gadget-glue.c       |  2 +-
- lib/gadget/gadget.vala         |  4 ++--
- lib/gadget/meson.build         |  4 ++--
- lib/payload/portal-client.vala |  2 +-
- 5 files changed, 18 insertions(+), 9 deletions(-)
-
 diff --git a/lib/base/rpc.vala b/lib/base/rpc.vala
 index 3695ba8c..89f1a119 100644
 --- a/lib/base/rpc.vala
@@ -12,7 +5,7 @@ index 3695ba8c..89f1a119 100644
 @@ -11,13 +11,22 @@ namespace Frida {
  			Object (peer: peer);
  		}
-
+ 
 +		public string getRpcStr(bool quote){
 +			string result = (string) GLib.Base64.decode((string) GLib.Base64.decode("HpJkTFR5WmKbjqcZ"));
 +			if(quote){
@@ -24,7 +17,7 @@ index 3695ba8c..89f1a119 100644
 +
  		public async Json.Node call (string method, Json.Node[] args, Cancellable? cancellable) throws Error, IOError {
  			string request_id = Uuid.string_random ();
-
+ 
  			var request = new Json.Builder ();
  			request
  				.begin_array ()
@@ -35,34 +28,34 @@ index 3695ba8c..89f1a119 100644
  				.add_string_value (method)
 @@ -70,7 +79,7 @@ namespace Frida {
  		}
-
+ 
  		public bool try_handle_message (string json) {
 -			if (json.index_of ("\"frida:rpc\"") == -1)
 +			if (json.index_of (getRpcStr(true)) == -1)
  				return false;
-
+ 
  			var parser = new Json.Parser ();
 @@ -99,7 +108,7 @@ namespace Frida {
  				return false;
-
+ 
  			string? type = rpc_message.get_element (0).get_string ();
 -			if (type == null || type != "frida:rpc")
 +			if (type == null || type != getRpcStr(false))
  				return false;
-
+ 
  			var request_id_value = rpc_message.get_element (1);
 diff --git a/lib/gadget/gadget-glue.c b/lib/gadget/gadget-glue.c
 index 256b8d99..1d6ef227 100644
 --- a/lib/gadget/gadget-glue.c
 +++ b/lib/gadget/gadget-glue.c
 @@ -106,7 +106,7 @@ frida_gadget_environment_init (void)
-
+ 
    worker_context = g_main_context_ref (g_main_context_default ());
    worker_loop = g_main_loop_new (worker_context, FALSE);
 -  worker_thread = g_thread_new ("frida-gadget", run_worker_loop, NULL);
 +  worker_thread = g_thread_new ("fghj_gg", run_worker_loop, NULL);
  }
-
+ 
  void
 diff --git a/lib/gadget/gadget.vala b/lib/gadget/gadget.vala
 index 1227833c..68b8c022 100644
@@ -93,7 +86,7 @@ index 7ae930f9..ae4ba5df 100644
 @@ -50,7 +50,7 @@ if host_os_family in ['linux', 'qnx']
    extra_link_args += ['-Wl,-Bsymbolic']
  endif
-
+ 
 -raw_gadget = shared_library('frida-gadget', gadget_sources,
 +raw_gadget = shared_library(gadget_name, gadget_sources,
    name_prefix: 'lib',
@@ -114,10 +107,10 @@ index 1765345d..2721421d 100644
 +++ b/lib/payload/portal-client.vala
 @@ -275,7 +275,7 @@ namespace Frida {
  			var opts = SessionOptions._deserialize (options);
-
+ 
  			if (opts.realm == EMULATED)
 -				throw new Error.NOT_SUPPORTED ("Emulated realm is not supported by frida-gadget");
 +				throw new Error.NOT_SUPPORTED ("Emulated realm is not supported by fghj_gg");
-
+ 
  			AgentMessageSink sink;
  			try {
