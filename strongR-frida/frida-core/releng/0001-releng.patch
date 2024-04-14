@@ -1,3 +1,6 @@
+ rename-release-assets.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
 diff --git a/rename-release-assets.sh b/rename-release-assets.sh
 index 69181cd..d86f4fe 100755
 --- a/rename-release-assets.sh
