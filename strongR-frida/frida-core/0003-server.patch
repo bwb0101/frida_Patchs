@@ -8,7 +8,7 @@ index 525c145e..7faa7476 100644
 @@ -1,7 +1,7 @@
  namespace Frida.Server {
  	private static Application application;
-
+ 
 -	private const string DEFAULT_DIRECTORY = "re.frida.server";
 +	private const string DEFAULT_DIRECTORY = null;
  	private static bool output_version = false;
@@ -16,9 +16,10 @@ index 525c145e..7faa7476 100644
  	private static string? certpath = null;
 @@ -50,6 +50,7 @@ namespace Frida.Server {
  	};
-
+ 
  	private static int main (string[] args) {
 +		DEFAULT_DIRECTORY = GLib.Uuid.string_random();
  		Environment.init ();
-
+ 
  #if DARWIN
+

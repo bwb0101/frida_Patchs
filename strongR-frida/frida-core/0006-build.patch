@@ -6,11 +6,12 @@ index 9f35d939..92ef9c67 100644
 --- a/meson.build
 +++ b/meson.build
 @@ -180,7 +180,7 @@ endif
-
+ 
  helper_name = 'frida-helper' + exe_suffix
  agent_name = 'frida-agent' + shlib_suffix
 -gadget_name = 'frida-gadget' + shlib_suffix
 +gadget_name = 'fghj_gg' + shlib_suffix
-
+ 
  if host_os_family == 'darwin'
    asset_dir = get_option('libdir') / 'frida'
+
