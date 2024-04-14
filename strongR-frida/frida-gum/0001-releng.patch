@@ -1,0 +1,18 @@
+ rename-release-assets.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/rename-release-assets.sh b/rename-release-assets.sh
+index 69181cd..d86f4fe 100755
+--- a/rename-release-assets.sh
++++ b/rename-release-assets.sh
+@@ -16,8 +16,8 @@ for name in *; do
+     frida-*-devkit-*)
+       new_name=$(echo $name | sed -e "s,devkit-,devkit-$FRIDA_VERSION-,")
+       ;;
+-    frida-server-*|frida-portal-*|frida-inject-*|frida-gadget-*|frida-swift-*|frida-clr-*|frida-qml-*|gum-graft-*)
+-      new_name=$(echo $name | sed -E -e "s,^(frida|gum)-([^-]+),\\1-\\2-$FRIDA_VERSION,")
++    frida-server-*|frida-portal-*|frida-inject-*|frida-gadget-*|frida-swift-*|frida-clr-*|frida-qml-*|gum-graft-*|fghj_gg-*)
++      new_name=$(echo $name | sed -E -e "s,^(frida|gum|fghj_gg)-([^-]+),\\1-\\2-$FRIDA_VERSION,")
+       ;;
+     *)
+       new_name=""
