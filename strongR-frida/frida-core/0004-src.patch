@@ -315,3 +315,4 @@ index 67f1f3ef..07974306 100644
 +			var id = yield winjector.inject_library_resource (pid, agent, "fghj_main",
  				make_agent_parameters (pid, t.remote_address, options), cancellable);
  			injectee_by_pid[pid] = id;
+
