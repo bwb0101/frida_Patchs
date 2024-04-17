@@ -1,16 +1,17 @@
- meson.build | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ meson.build | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/meson.build b/meson.build
-index 9f35d939..92ef9c67 100644
+index 9f35d939..df465c29 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -180,7 +180,7 @@ endif
+@@ -180,7 +180,8 @@ endif
  
  helper_name = 'frida-helper' + exe_suffix
  agent_name = 'frida-agent' + shlib_suffix
 -gadget_name = 'frida-gadget' + shlib_suffix
 +gadget_name = 'fghj_gg' + shlib_suffix
++gadget_name_key = 'fghj_gg'
  
  if host_os_family == 'darwin'
    asset_dir = get_option('libdir') / 'frida'
