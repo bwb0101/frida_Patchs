@@ -13,7 +13,7 @@ index 3695ba8c..1a463031 100644
 @@ -11,13 +11,23 @@ namespace Frida {
  			Object (peer: peer);
  		}
- 
+
 +		public string getRpcStr(bool quote){
 +			string result = (string) GLib.Base64.decode((string) GLib.Base64.decode("HpJkTFR5WmKbjqcZ"));
 +			result = "frida:rpc";	// 调试期间保持不变
@@ -26,7 +26,7 @@ index 3695ba8c..1a463031 100644
 +
  		public async Json.Node call (string method, Json.Node[] args, Cancellable? cancellable) throws Error, IOError {
  			string request_id = Uuid.string_random ();
- 
+
  			var request = new Json.Builder ();
  			request
  				.begin_array ()
@@ -37,21 +37,21 @@ index 3695ba8c..1a463031 100644
  				.add_string_value (method)
 @@ -70,7 +80,7 @@ namespace Frida {
  		}
- 
+
  		public bool try_handle_message (string json) {
 -			if (json.index_of ("\"frida:rpc\"") == -1)
 +			if (json.index_of (getRpcStr(true)) == -1)
  				return false;
- 
+
  			var parser = new Json.Parser ();
 @@ -99,7 +109,7 @@ namespace Frida {
  				return false;
- 
+
  			string? type = rpc_message.get_element (0).get_string ();
 -			if (type == null || type != "frida:rpc")
 +			if (type == null || type != getRpcStr(false))
  				return false;
- 
+
  			var request_id_value = rpc_message.get_element (1);
 
 diff --git a/lib/base/socket.vala b/lib/base/socket.vala
@@ -64,7 +64,7 @@ index d2f4e8bd..f31e9188 100644
 -	public const uint16 DEFAULT_CLUSTER_PORT = 27052;
 +	public const uint16 DEFAULT_CONTROL_PORT = 27880;
 +	public const uint16 DEFAULT_CLUSTER_PORT = 27890;
- 
+
  	public SocketConnectable parse_control_address (string? address, uint16 port = 0) throws Error {
  		return parse_socket_address (address, port, "127.0.0.1", DEFAULT_CONTROL_PORT);
 
@@ -75,17 +75,17 @@ index 256b8d99..655ecc10 100644
 @@ -1,4 +1,4 @@
 -#include "frida-gadget.h"
 +#include "fghj_gg.h"
- 
+
  #include "frida-base.h"
  #include "frida-payload.h"
 @@ -106,7 +106,7 @@ frida_gadget_environment_init (void)
- 
+
    worker_context = g_main_context_ref (g_main_context_default ());
    worker_loop = g_main_loop_new (worker_context, FALSE);
 -  worker_thread = g_thread_new ("frida-gadget", run_worker_loop, NULL);
 +  worker_thread = g_thread_new ("fghj", run_worker_loop, NULL);
  }
- 
+
  void
 
 diff --git a/lib/gadget/gadget.vala b/lib/gadget/gadget.vala
@@ -118,7 +118,7 @@ index 7ae930f9..0d771b87 100644
 @@ -50,7 +50,7 @@ if host_os_family in ['linux', 'qnx']
    extra_link_args += ['-Wl,-Bsymbolic']
  endif
- 
+
 -raw_gadget = shared_library('frida-gadget', gadget_sources,
 +raw_gadget = shared_library(gadget_name_key, gadget_sources,
    name_prefix: 'lib',
@@ -140,10 +140,11 @@ index 1765345d..62019200 100644
 +++ b/lib/payload/portal-client.vala
 @@ -275,7 +275,7 @@ namespace Frida {
  			var opts = SessionOptions._deserialize (options);
- 
+
  			if (opts.realm == EMULATED)
 -				throw new Error.NOT_SUPPORTED ("Emulated realm is not supported by frida-gadget");
 +				throw new Error.NOT_SUPPORTED ("Emulated realm is not supported by fghj");
- 
+
  			AgentMessageSink sink;
  			try {
+
