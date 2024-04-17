@@ -1,16 +1,16 @@
- src/agent-container.vala              |  2 +-
- src/darwin/darwin-host-session.vala   |  2 +-
- src/droidy/droidy-client.vala         |  2 +-
- src/droidy/droidy-host-session.vala   |  2 +-
- src/embed-agent.py                    | 86 +++++++++++++++++++++++++++++++----
- src/freebsd/freebsd-host-session.vala |  2 +-
- src/frida-glue.c                      |  5 +-
- src/fruity/injector.vala              |  2 +-
- src/linux/frida-helper-backend.vala   |  2 +-
- src/linux/linux-host-session.vala     |  9 ++--
- src/qnx/qnx-host-session.vala         |  2 +-
- src/windows/windows-host-session.vala |  2 +-
- 12 files changed, 94 insertions(+), 24 deletions(-)
+ src/agent-container.vala              |   2 +-
+ src/darwin/darwin-host-session.vala   |   2 +-
+ src/droidy/droidy-client.vala         |   2 +-
+ src/droidy/droidy-host-session.vala   |   2 +-
+ src/embed-agent.py                    | 111 +++++++++++++++++++++++++++++++---
+ src/freebsd/freebsd-host-session.vala |   2 +-
+ src/frida-glue.c                      |   5 +-
+ src/fruity/injector.vala              |   2 +-
+ src/linux/frida-helper-backend.vala   |   2 +-
+ src/linux/linux-host-session.vala     |   9 +--
+ src/qnx/qnx-host-session.vala         |   2 +-
+ src/windows/windows-host-session.vala |   2 +-
+ 12 files changed, 119 insertions(+), 24 deletions(-)
 
 diff --git a/src/agent-container.vala b/src/agent-container.vala
 index 73e0c017..1ce38dc8 100644
@@ -18,12 +18,13 @@ index 73e0c017..1ce38dc8 100644
 +++ b/src/agent-container.vala
 @@ -28,7 +28,7 @@ namespace Frida {
  			}
-
+ 
  			void * main_func_symbol;
 -			var main_func_found = container.module.symbol ("frida_agent_main", out main_func_symbol);
 +			var main_func_found = container.module.symbol ("fghj_main", out main_func_symbol);
  			assert (main_func_found);
  			container.main_impl = (AgentMainFunc) main_func_symbol;
+
 
 diff --git a/src/darwin/darwin-host-session.vala b/src/darwin/darwin-host-session.vala
 index ab9b2900..ae54e26f 100644
@@ -32,7 +33,7 @@ index ab9b2900..ae54e26f 100644
 @@ -381,7 +381,7 @@ namespace Frida {
  		private async uint inject_agent (uint pid, string agent_parameters, Cancellable? cancellable) throws Error, IOError {
  			uint id;
-
+ 
 -			unowned string entrypoint = "frida_agent_main";
 +			unowned string entrypoint = "fghj_main";
  #if HAVE_EMBEDDED_ASSETS
@@ -49,7 +50,7 @@ index ddc56ccc..c3464e77 100644
  						case "WRTE":
 -							throw new Error.PROTOCOL ("Unexpected command");
 +							break; // throw new Error.PROTOCOL ("Unexpected command");
-
+ 
  						default:
  							var length = parse_length (command_or_length);
 
@@ -68,15 +69,14 @@ index 8bf559e0..750505a3 100644
  			}
 
 diff --git a/src/embed-agent.py b/src/embed-agent.py
-index e9dbfb7b..2a88d635 100755
+index e9dbfb7b..e98b8cbe 100755
 --- a/src/embed-agent.py
 +++ b/src/embed-agent.py
-@@ -1,9 +1,15 @@
+@@ -1,9 +1,14 @@
  #!/usr/bin/env python
-
+ 
 -from pathlib import Path
 +import os
-+# import sys
 +import random
  import shutil
  import subprocess
@@ -85,10 +85,10 @@ index e9dbfb7b..2a88d635 100755
 +
 +# anti frida
 +import lief
-
-
+ 
+ 
  def main(argv):
-@@ -16,9 +22,9 @@ def main(argv):
+@@ -16,9 +21,9 @@ def main(argv):
      output_dir = Path(args.pop(0))
      resource_config = args.pop(0)
      agent_modern, agent_legacy, \
@@ -98,25 +98,25 @@ index e9dbfb7b..2a88d635 100755
 +        agent_emulated_modern, agent_emulated_legacy, \
 +        agent_dbghelp_prefix, agent_symsrv_prefix \
 +        = [Path(p) if p else None for p in args[:6]]
-
+ 
      if agent_modern is None and agent_legacy is None:
          print("At least one agent must be provided", file=sys.stderr)
-@@ -72,23 +78,25 @@ def main(argv):
+@@ -72,23 +77,25 @@ def main(argv):
                  shutil.copy(agent, embedded_agent)
              else:
                  embedded_agent.write_bytes(b"")
-+            anti_frida(embedded_agent)
++            # anti_frida(embedded_agent)
              embedded_assets += [embedded_agent]
      elif host_os in {"freebsd", "qnx"}:
          embedded_agent = priv_dir / "frida-agent.so"
          agent = agent_modern if agent_modern is not None else agent_legacy
          shutil.copy(agent, embedded_agent)
-+        anti_frida(embedded_agent)
++        # anti_frida(embedded_agent)
          embedded_assets += [embedded_agent]
      else:
          print("Unsupported OS", file=sys.stderr)
          sys.exit(1)
-
+ 
      subprocess.run([
 -        resource_compiler,
 -        f"--toolchain={host_toolchain}",
@@ -130,13 +130,13 @@ index e9dbfb7b..2a88d635 100755
 +                       "--config-filename", resource_config,
 +                       "--output-basename", output_dir / "frida-data-agent",
 +                   ] + embedded_assets, check=True)
-
-
+ 
+ 
  def pop_cmd_array_arg(args):
-@@ -105,5 +113,63 @@ def pop_cmd_array_arg(args):
+@@ -105,5 +112,89 @@ def pop_cmd_array_arg(args):
      return result
-
-
+ 
+ 
 +def anti_frida(input_file):
 +    random_charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 +    log_color(f"[*] Patch frida-agent: {input_file}")
@@ -174,25 +174,51 @@ index e9dbfb7b..2a88d635 100755
 +    binary.write(input_file)
 +
 +    # gum-js-loop thread
-+    random_name = "".join(random.sample(random_charset, 11))
-+    log_color(f"[*] Patch `gum-js-loop` to `{random_name}`")
-+    os.system(f"sed -b -i s/gum-js-loop/{random_name}/g {input_file}")
++    flag = "gum-js-loop"
++    random_name = "".join(random.sample(random_charset, len(flag)))
++    hex_random_name = hex_str(random_name)
++    log_color(f"[*] Patch `gum-js-loop` to `{random_name}({hex_random_name})`")
++    replace_hex_file(hex_str(flag), hex_random_name, input_file)
++    # os.system(f"sed -b -i s/gum-js-loop/{random_name}/g {input_file}")
 +
 +    # gmain thread
-+    random_name = "".join(random.sample(random_charset, 5))
-+    log_color(f"[*] Patch `gmain` to `{random_name}`")
-+    os.system(f"sed -b -i s/gmain/{random_name}/g {input_file}")
++    flag = "gmain"
++    random_name = "".join(random.sample(random_charset, len(flag)))
++    hex_random_name = hex_str(random_name)
++    log_color(f"[*] Patch `gmain` to `{random_name}({hex_random_name})`")
++    replace_hex_file(hex_str(flag), hex_random_name, input_file)
++    # os.system(f"sed -b -i s/gmain/{random_name}/g {input_file}")
 +
 +    # thread_gdbus
-+    random_name = "".join(random.sample(random_charset, 5))
-+    log_color(f"[*] Patch `gdbus` to `{random_name}`")
-+    os.system(f"sed -b -i s/gdbus/{random_name}/g {input_file}")
++    flag = "gdbus"
++    random_name = "".join(random.sample(random_charset, len(flag)))
++    hex_random_name = hex_str(random_name)
++    log_color(f"[*] Patch `gdbus` to `{random_name}({hex_random_name})`")
++    replace_hex_file(hex_str(flag), hex_random_name, input_file)
++    # os.system(f"sed -b -i s/gdbus/{random_name}/g {input_file}")
 +
 +    log_color(f"[*] Patch Finish")
 +
 +
 +def log_color(msg):
 +    print(f"\033[1;31;40m{msg}\033[0m")
++
++
++def execute_command(command):
++    result = os.popen(command).read()
++    return result
++
++
++def hex_str(input_str):
++    return "".join(execute_command('echo %s | hexdump |head -n 1' % input_str).strip().split(' ')[1:len(input_str) + 1]).upper()
++
++
++def replace_hex_file(source, target, input_file):
++    tmp_file = os.path.join(os.path.dirname(os.path.abspath(input_file)), "tmpfile")
++    # hexdump -ve '1/1 "%.2X"' file1 | sed 's/420224/121224/g' | xxd -r -p > new_updated
++    # print(f"==={input_file}, {source}, {target}, {tmp_file}")
++    execute_command("hexdump -ve '1/1 %s' %s | sed 's/%s/%s/g' | xxd -r -p > %s" % ('"%.2X"', input_file, source, target, tmp_file))
++    execute_command("mv %s %s" % (tmp_file, input_file))
 +
 +
  if __name__ == "__main__":
@@ -203,13 +229,14 @@ index a2204a4e..96a9beec 100644
 --- a/src/freebsd/freebsd-host-session.vala
 +++ b/src/freebsd/freebsd-host-session.vala
 @@ -197,7 +197,7 @@ namespace Frida {
-
+ 
  			var stream_request = Pipe.open (t.local_address, cancellable);
-
+ 
 -			var id = yield binjector.inject_library_resource (pid, agent_desc, "frida_agent_main",
 +			var id = yield binjector.inject_library_resource (pid, agent_desc, "fghj_main",
  				make_agent_parameters (pid, t.remote_address, options), cancellable);
  			injectee_by_pid[pid] = id;
+
 
 diff --git a/src/frida-glue.c b/src/frida-glue.c
 index ee8f0737..46631bbd 100644
@@ -218,7 +245,7 @@ index ee8f0737..46631bbd 100644
 @@ -40,11 +40,14 @@ frida_init_with_runtime (FridaRuntime rt)
      g_io_module_openssl_register ();
  #endif
-
+ 
 +	// 这里继续保留（新代码已被去掉）参见：https://github.com/frida/frida-core/pull/496
 +	g_set_prgname ("fghj");
 +
@@ -229,7 +256,7 @@ index ee8f0737..46631bbd 100644
 -      main_thread = g_thread_new ("frida-main-loop", run_main_loop, NULL);
 +      main_thread = g_thread_new ("fghj-mloop", run_main_loop, NULL);
      }
-
+ 
      g_once_init_leave (&frida_initialized, TRUE);
 
 diff --git a/src/fruity/injector.vala b/src/fruity/injector.vala
@@ -238,12 +265,12 @@ index ad4c151c..a1b736d8 100644
 +++ b/src/fruity/injector.vala
 @@ -122,7 +122,7 @@ namespace Frida.Fruity.Injector {
  					return true;
-
+ 
  				MatchInfo info;
 -				if (/^frida-gadget-tcp-(\d+)$/.match (name, 0, out info)) {
 +				if (/^fghj-tcp-(\d+)$/.match (name, 0, out info)) {
  					string raw_port = info.fetch (1);
-
+ 
  					try {
 
 diff --git a/src/linux/frida-helper-backend.vala b/src/linux/frida-helper-backend.vala
@@ -252,12 +279,13 @@ index f2d3721e..e995f756 100644
 +++ b/src/linux/frida-helper-backend.vala
 @@ -3232,7 +3232,7 @@ namespace Frida {
  		}
-
+ 
  		private int memfd_create (string name, uint flags) {
 -			return Linux.syscall (SysCall.memfd_create, name, flags);
 +			return Linux.syscall (SysCall.memfd_create, "hj-cache", flags);
  		}
  	}
+
 
 diff --git a/src/linux/linux-host-session.vala b/src/linux/linux-host-session.vala
 index 50470ac8..9054d90e 100644
@@ -295,13 +323,14 @@ index 69f2995f..cffc2dd8 100644
 --- a/src/qnx/qnx-host-session.vala
 +++ b/src/qnx/qnx-host-session.vala
 @@ -182,7 +182,7 @@ namespace Frida {
-
+ 
  			var stream_request = Pipe.open (t.local_address, cancellable);
-
+ 
 -			var id = yield qinjector.inject_library_resource (pid, agent_desc, "frida_agent_main",
 +			var id = yield qinjector.inject_library_resource (pid, agent_desc, "fghj_main",
  				make_agent_parameters (pid, t.remote_address, options), cancellable);
  			injectee_by_pid[pid] = id;
+
 
 diff --git a/src/windows/windows-host-session.vala b/src/windows/windows-host-session.vala
 index 67f1f3ef..07974306 100644
@@ -309,7 +338,7 @@ index 67f1f3ef..07974306 100644
 +++ b/src/windows/windows-host-session.vala
 @@ -274,7 +274,7 @@ namespace Frida {
  			var stream_request = Pipe.open (t.local_address, cancellable);
-
+ 
  			var winjector = injector as Winjector;
 -			var id = yield winjector.inject_library_resource (pid, agent, "frida_agent_main",
 +			var id = yield winjector.inject_library_resource (pid, agent, "fghj_main",

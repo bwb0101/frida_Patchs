@@ -1,8 +1,8 @@
  tests/test-agent.vala        | 2 +-
  tests/test-gadget.vala       | 4 ++--
- tests/test-host-session.vala | 2 +-
+ tests/test-host-session.vala | 6 +++---
  tests/test-injector.vala     | 2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ 4 files changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/tests/test-agent.vala b/tests/test-agent.vala
 index d28e67fd..f7d77a9d 100644
@@ -16,7 +16,7 @@ index d28e67fd..f7d77a9d 100644
 +			var main_func_found = module.symbol ("fghj_main", out main_func_symbol);
  			assert_true (main_func_found);
  			main_impl = (AgentMainFunc) main_func_symbol;
- 
+
 
 diff --git a/tests/test-gadget.vala b/tests/test-gadget.vala
 index f991133d..761af15c 100644
@@ -35,9 +35,27 @@ index f991133d..761af15c 100644
  			var envp = new string[] {
 
 diff --git a/tests/test-host-session.vala b/tests/test-host-session.vala
-index 91f42e0b..6b812b64 100644
+index 91f42e0b..b15c91da 100644
 --- a/tests/test-host-session.vala
 +++ b/tests/test-host-session.vala
+@@ -1074,7 +1074,7 @@ namespace Frida.HostSessionTest {
+ 				bool waiting = false;
+ 
+ 				ControlService control_service;
+-				uint16 control_port = 27042;
++				uint16 control_port = 27880;
+ 				while (true) {
+ 					var ep = new EndpointParameters ("127.0.0.1", control_port);
+ 					control_service = new ControlService (ep);
+@@ -1372,7 +1372,7 @@ namespace Frida.HostSessionTest {
+ 
+ 			try {
+ 				ControlService control_service;
+-				uint16 control_port = 27042;
++				uint16 control_port = 27880;
+ 				while (true) {
+ 					var ep = new EndpointParameters ("127.0.0.1", control_port);
+ 					control_service = new ControlService (ep);
 @@ -3779,7 +3779,7 @@ namespace Frida.HostSessionTest {
  
  			string device_serial = "<device-serial>";
@@ -61,3 +79,4 @@ index f4a321c4..eea03a58 100644
  			} catch (GLib.Error e) {
  				printerr ("\nFAIL: %s\n\n", e.message);
  				assert_not_reached ();
+

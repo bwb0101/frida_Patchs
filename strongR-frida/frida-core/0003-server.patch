@@ -1,8 +1,8 @@
- server/server.vala | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ server/server.vala | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/server/server.vala b/server/server.vala
-index 525c145e..7faa7476 100644
+index 525c145e..963f1111 100644
 --- a/server/server.vala
 +++ b/server/server.vala
 @@ -1,7 +1,7 @@
@@ -10,16 +10,8 @@ index 525c145e..7faa7476 100644
  	private static Application application;
  
 -	private const string DEFAULT_DIRECTORY = "re.frida.server";
-+	private const string DEFAULT_DIRECTORY = null;
++	private const string DEFAULT_DIRECTORY = "fghj.svr";
  	private static bool output_version = false;
  	private static string? listen_address = null;
  	private static string? certpath = null;
-@@ -50,6 +50,7 @@ namespace Frida.Server {
- 	};
- 
- 	private static int main (string[] args) {
-+		DEFAULT_DIRECTORY = GLib.Uuid.string_random();
- 		Environment.init ();
- 
- #if DARWIN
 
